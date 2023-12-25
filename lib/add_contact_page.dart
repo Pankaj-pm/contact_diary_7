@@ -1,26 +1,20 @@
+import 'package:contact_diary_7/add_contact_provider.dart';
 import 'package:contact_diary_7/contact_model.dart';
 import 'package:contact_diary_7/util.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
 
 class AddContactPage extends StatefulWidget {
-  void Function()? changeTheme;
 
-  AddContactPage({super.key, this.changeTheme});
+
+  const AddContactPage({super.key});
 
   @override
   State<AddContactPage> createState() => _AddContactPageState();
 }
 
 class _AddContactPageState extends State<AddContactPage> {
-  int cIndex = 0;
-
-  TextEditingController nameController = TextEditingController();
-  TextEditingController contactController = TextEditingController();
-  TextEditingController emailController = TextEditingController();
-  GlobalKey<FormState> fk = GlobalKey<FormState>();
-  bool isEdit=false;
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -28,90 +22,92 @@ class _AddContactPageState extends State<AddContactPage> {
         title: Text("Next Page"),
       ),
       body: Form(
-        key: fk,
-        child: Stepper(
-          currentStep: cIndex,
-          onStepContinue: () {
-            isEdit=true;
-            if (cIndex < 2) {
-              cIndex++;
-              setState(() {});
-            }
-          },
-          onStepCancel: () {
-            if (cIndex > 0) {
-              cIndex--;
-              setState(() {});
-            }
-          },
-          onStepTapped: (value) {
-            cIndex = value;
-            setState(() {});
-
-          },
-          controlsBuilder: (context, details) {
-            return Row(
-              children: [
-                if (details.currentStep != 2)
-                  ElevatedButton(onPressed: details.onStepContinue, child: Text("Continue")),
-                SizedBox(
-                  width: 10,
+        key: Provider.of<ContactProvider>(context, listen: false).fk,
+        child: Consumer<ContactProvider>(
+          builder: (context, contactProvider, child) {
+            return Stepper(
+              currentStep: contactProvider.cIndex,
+              onStepContinue: () {
+                contactProvider.nextStep();
+              },
+              onStepCancel: () {
+                contactProvider.previousStep();
+              },
+              onStepTapped: (value) {
+                contactProvider.changeStep(value);
+              },
+              controlsBuilder: (context, details) {
+                return Row(
+                  children: [
+                    if (details.currentStep != 2)
+                      ElevatedButton(onPressed: details.onStepContinue, child: Text("Continue")),
+                    SizedBox(
+                      width: 10,
+                    ),
+                    if (details.currentStep != 0) OutlinedButton(onPressed: details.onStepCancel, child: Text("Back")),
+                  ],
+                );
+              },
+              steps: [
+                Step(
+                  title: Text("Step 1"),
+                  content: TextFormField(
+                    controller: contactProvider.nameController,
+                    decoration: InputDecoration(hintText: "Name"),
+                    onChanged: (value) {},
+                  ),
+                  label: Text("S1"),
+                  isActive: contactProvider.cIndex >= 0,
+                  state: (contactProvider.nameController.text.isEmpty &&
+                          contactProvider.isEdit &&
+                          contactProvider.cIndex != 0)
+                      ? StepState.error
+                      : StepState.complete,
                 ),
-                if (details.currentStep != 0) OutlinedButton(onPressed: details.onStepCancel, child: Text("Back")),
+                Step(
+                    title: Text("Step 2"),
+                    content: TextFormField(
+                      controller: contactProvider.contactController,
+                      decoration: InputDecoration(hintText: "Number"),
+                      keyboardType: TextInputType.phone,
+                      inputFormatters: [
+                        FilteringTextInputFormatter.digitsOnly,
+                      ],
+                    ),
+                    isActive: contactProvider.cIndex >= 1),
+                Step(
+                    title: Text("Step 3"),
+                    content: TextFormField(
+                      controller: contactProvider.emailController,
+                      decoration: InputDecoration(hintText: "Email"),
+                      autovalidateMode: AutovalidateMode.onUserInteraction,
+                      validator: (value) {
+                        if (value?.isEmpty ?? true) {
+                          return "Enter Email";
+                        } else if (!isEmail(value ?? "")) {
+                          return "Enter valid Email";
+                        }
+                        return null;
+                      },
+                    ),
+                    isActive: contactProvider.cIndex >= 2),
               ],
             );
           },
-          steps: [
-            Step(
-              title: Text("Step 1"),
-              content: TextFormField(
-                controller: nameController,
-                decoration: InputDecoration(hintText: "Name"),
-                onChanged: (value) {},
-              ),
-              label: Text("S1"),
-              isActive: cIndex >= 0,
-              state: (nameController.text.isEmpty && isEdit && cIndex!=0) ? StepState.error : StepState.complete,
-            ),
-            Step(
-                title: Text("Step 2"),
-                content: TextFormField(
-                  controller: contactController,
-                  decoration: InputDecoration(hintText: "Number"),
-                  keyboardType: TextInputType.phone,
-                  inputFormatters: [
-                    FilteringTextInputFormatter.digitsOnly,
-                  ],
-                ),
-                isActive: cIndex >= 1),
-            Step(
-                title: Text("Step 3"),
-                content: TextFormField(
-                  controller: emailController,
-                  decoration: InputDecoration(hintText: "Email"),
-                  autovalidateMode: AutovalidateMode.onUserInteraction,
-                  validator: (value) {
-                    if (value?.isEmpty ?? true) {
-                      return "Enter Email";
-                    } else if (!isEmail(value ?? "")) {
-                      return "Enter valid Email";
-                    }
-                    return null;
-                  },
-                ),
-                isActive: cIndex >= 2),
-          ],
         ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           // widget.changeTheme?.call();
-          contactList.add(ContactModel(
-            email: emailController.text,
-            name: nameController.text,
-            number: contactController.text,
-          ));
-          Navigator.pop(context);
+          var cp = Provider.of<ContactProvider>(context, listen: false);
+          if (cp.fk.currentState?.validate() ?? false) {
+            contactList.add(ContactModel(
+              email: cp.emailController.text,
+              name: cp.nameController.text,
+              number: cp.contactController.text,
+            ));
+            Navigator.pop(context);
+          }
         },
         child: const Icon(Icons.add),
       ),

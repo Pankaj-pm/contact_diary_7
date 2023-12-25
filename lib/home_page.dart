@@ -1,34 +1,33 @@
 import 'package:contact_diary_7/add_contact_page.dart';
+import 'package:contact_diary_7/theme_provider.dart';
 import 'package:contact_diary_7/util.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class HomePage extends StatefulWidget {
-  void Function()? changeTheme;
-  String? name;
-
-  HomePage({super.key, this.changeTheme, this.name});
+  const HomePage({super.key});
 
   @override
   State<HomePage> createState() => _HomePageState();
 }
 
 class _HomePageState extends State<HomePage> {
-  bool isDark = false;
-
   @override
   Widget build(BuildContext context) {
+    print("Home Page");
     return Scaffold(
       appBar: AppBar(
         title: const Text("Home Page"),
         actions: [
-          Switch(
-            value: isDark,
-            onChanged: (value) {
-              isDark = value;
-              widget.changeTheme?.call();
-              // setState(() {});
-            },
-          ),
+          Consumer<ThemeProvider>(
+              builder: (context, themeProvider, child) => Switch(
+                    value: themeProvider.isDark,
+                    onChanged: (value) {
+                      themeProvider.changeTheme();
+                      // isDark = value;
+                      // setState(() {});
+                    },
+                  )),
         ],
       ),
       body: ListView.builder(
@@ -36,18 +35,20 @@ class _HomePageState extends State<HomePage> {
         itemBuilder: (context, index) {
           var contactModel = contactList[index];
           return ListTile(
-            title: Text(contactModel.name??""),
-            subtitle: Text(contactModel.number??""),
+            title: Text(contactModel.name ?? ""),
+            subtitle: Text(contactModel.number ?? ""),
           );
         },
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () async{
+        onPressed: () async {
           // widget.changeTheme?.call();
-          await Navigator.push(context, MaterialPageRoute(builder: (context) => AddContactPage(changeTheme: widget.changeTheme),));
-          setState(() {
-
-          });
+          await Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => AddContactPage(),
+              ));
+          setState(() {});
           print("back avi gya");
         },
         child: const Icon(Icons.add),
