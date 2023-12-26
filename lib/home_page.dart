@@ -43,13 +43,15 @@ class _HomePageState extends State<HomePage> {
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
           // widget.changeTheme?.call();
-          await Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => AddContactPage(),
-              ));
-          setState(() {});
-          print("back avi gya");
+
+          // await Navigator.push(
+          //     context,
+          //     MaterialPageRoute(
+          //       builder: (context) => AddContactPage(),
+          //     ));
+          // setState(() {});
+          Provider.of<ThemeProvider>(context,listen: false).getTheme();
+          print("back avi gya ");
         },
         child: const Icon(Icons.add),
       ),
