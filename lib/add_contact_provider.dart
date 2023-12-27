@@ -19,12 +19,19 @@ class ContactProvider extends ChangeNotifier {
   void previousStep() {
     if (cIndex > 0) {
       cIndex--;
-     notifyListeners();
+      notifyListeners();
     }
   }
 
-  void changeStep(int index){
-    cIndex=index;
+  void changeStep(int index) {
+    cIndex = index;
     notifyListeners();
+  }
+
+  void reset() {
+    nameController.clear();
+    contactController.clear();
+    emailController.clear();
+    cIndex=0;
   }
 }

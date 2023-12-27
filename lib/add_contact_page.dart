@@ -1,25 +1,46 @@
 import 'package:contact_diary_7/add_contact_provider.dart';
 import 'package:contact_diary_7/contact_model.dart';
+import 'package:contact_diary_7/contact_provider.dart';
 import 'package:contact_diary_7/util.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 class AddContactPage extends StatefulWidget {
+  // final ContactModel? contactModel;
+  final int? index;
 
-
-  const AddContactPage({super.key});
+  const AddContactPage({super.key,  this.index});
 
   @override
   State<AddContactPage> createState() => _AddContactPageState();
 }
 
 class _AddContactPageState extends State<AddContactPage> {
+  String title = "Add Contact";
+
+  @override
+  void initState() {
+    super.initState();
+
+    var cp = Provider.of<ContactProvider>(context, listen: false);
+
+    if(widget.index!=null){
+      var clp = Provider.of<ContactListProvider>(context, listen: false);
+      var contactModel= clp.contactList[widget.index!];
+      cp.nameController.text = contactModel?.name ?? "";
+      cp.contactController.text = contactModel?.number ?? "";
+      cp.emailController.text = contactModel?.email ?? "";
+      title = "Edit Contact";
+    }
+
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Next Page"),
+        title: Text(title),
       ),
       body: Form(
         key: Provider.of<ContactProvider>(context, listen: false).fk,
@@ -101,15 +122,21 @@ class _AddContactPageState extends State<AddContactPage> {
           // widget.changeTheme?.call();
           var cp = Provider.of<ContactProvider>(context, listen: false);
           if (cp.fk.currentState?.validate() ?? false) {
-            contactList.add(ContactModel(
-              email: cp.emailController.text,
-              name: cp.nameController.text,
-              number: cp.contactController.text,
-            ));
+            ContactModel cm = ContactModel(
+                email: cp.emailController.text, name: cp.nameController.text, number: cp.contactController.text);
+
+            if (widget.index != null) {
+              Provider.of<ContactListProvider>(context, listen: false).edit(widget.index ?? 0, cm);
+            } else {
+              Provider.of<ContactListProvider>(context, listen: false).add(cm);
+            }
+
+            Provider.of<ContactProvider>(context, listen: false).reset();
+
             Navigator.pop(context);
           }
         },
-        child: const Icon(Icons.add),
+        child: Icon(widget.index != null ? Icons.edit : Icons.add),
       ),
     );
   }

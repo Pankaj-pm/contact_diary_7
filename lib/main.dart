@@ -1,4 +1,5 @@
 import 'package:contact_diary_7/add_contact_provider.dart';
+import 'package:contact_diary_7/contact_provider.dart';
 import 'package:contact_diary_7/home_page.dart';
 import 'package:contact_diary_7/add_contact_page.dart';
 import 'package:contact_diary_7/splash_screen.dart';
@@ -33,13 +34,17 @@ class _MyAppState extends State<MyApp> {
           ),
           ChangeNotifierProvider(
             create: (context) => ThemeProvider(),
+          ),
+          ChangeNotifierProvider(
+            create: (context) => ContactListProvider(),
           )
         ],
         builder: (context, child) => MaterialApp(
               theme: lightTheme,
               darkTheme: darkTheme,
               debugShowCheckedModeBanner: false,
-              themeMode: Provider.of<ThemeProvider>(context).isDark ? ThemeMode.dark : ThemeMode.light,
+              // themeMode: Provider.of<ThemeProvider>(context).isDark ? ThemeMode.dark : ThemeMode.light,
+              themeMode: ThemeMode.system,
               home: prefs.getInt("open") == 1 ? HomePage() : SplashScreen(),
             ));
   }

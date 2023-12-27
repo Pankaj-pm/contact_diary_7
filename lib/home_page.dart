@@ -1,8 +1,11 @@
 import 'package:contact_diary_7/add_contact_page.dart';
+import 'package:contact_diary_7/add_contact_provider.dart';
+import 'package:contact_diary_7/contact_provider.dart';
 import 'package:contact_diary_7/theme_provider.dart';
 import 'package:contact_diary_7/util.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -30,28 +33,58 @@ class _HomePageState extends State<HomePage> {
                   )),
         ],
       ),
-      body: ListView.builder(
-        itemCount: contactList.length,
-        itemBuilder: (context, index) {
-          var contactModel = contactList[index];
-          return ListTile(
-            title: Text(contactModel.name ?? ""),
-            subtitle: Text(contactModel.number ?? ""),
-          );
-        },
+      body: Consumer<ContactListProvider>(
+        builder: (context, contactListProvider, child) => ListView.builder(
+          itemCount: contactListProvider.contactList.length,
+          itemBuilder: (context, index) {
+            var contactModel = contactListProvider.contactList[index];
+            return ListTile(
+              title: Text(contactModel.name ?? ""),
+              subtitle: Text(contactModel.number ?? ""),
+              trailing: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  IconButton(
+                    onPressed: () {
+                      Provider.of<ContactListProvider>(context, listen: false).remove(index);
+                    },
+                    icon: Icon(Icons.delete),
+                  ),
+                  IconButton(
+                    onPressed: () {
+                      Navigator.push(context, MaterialPageRoute(
+                        builder: (context) {
+                          return AddContactPage(
+                            index: index,
+                          );
+                        },
+                      ));
+                    },
+                    icon: Icon(Icons.edit),
+                  ),
+                  IconButton(
+                    onPressed: () {
+                      // var uri = Uri.parse("tel:${contactModel.number ?? ""}");
+                      var uri = Uri.parse("https://flutter.dev");
+
+                      launchUrl(uri);
+                    },
+                    icon: Icon(Icons.call),
+                  ),
+                ],
+              ),
+            );
+          },
+        ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
-          // widget.changeTheme?.call();
-
-          // await Navigator.push(
-          //     context,
-          //     MaterialPageRoute(
-          //       builder: (context) => AddContactPage(),
-          //     ));
-          // setState(() {});
-          Provider.of<ThemeProvider>(context,listen: false).getTheme();
-          print("back avi gya ");
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => AddContactPage(),
+              ));
+          setState(() {});
         },
         child: const Icon(Icons.add),
       ),
