@@ -1,8 +1,11 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:contact_diary_7/add_contact_page.dart';
 import 'package:contact_diary_7/add_contact_provider.dart';
+import 'package:contact_diary_7/contact_list.dart';
 import 'package:contact_diary_7/contact_provider.dart';
+import 'package:contact_diary_7/main.dart';
 import 'package:contact_diary_7/theme_provider.dart';
 import 'package:contact_diary_7/util.dart';
 import 'package:flutter/foundation.dart';
@@ -48,9 +51,7 @@ class _HomePageState extends State<HomePage> {
             return ListTile(
               title: Text(contactModel.name ?? ""),
               splashColor: Colors.black12,
-              onTap: () {
-
-              },
+              onTap: () {},
               subtitle: Text(contactModel.number ?? ""),
               trailing: Row(
                 mainAxisSize: MainAxisSize.min,
@@ -60,35 +61,42 @@ class _HomePageState extends State<HomePage> {
                     // padding: EdgeInsetsDirectional.symmetric(vertical: 150),
                     clipBehavior: Clip.antiAlias,
                     icon: Icon(Icons.add),
-                    itemBuilder:(context) {
+                    itemBuilder: (context) {
                       return [
-                        PopupMenuItem(child:  IconButton(
-                          onPressed: () {
-                            // var uri = Uri.parse("tel:${contactModel.number ?? ""}");
-                            var uri = Uri.parse("https://api.whatsapp.com/send/?phone=918401784759&text&type=phone_number&app_absent=0");
+                        PopupMenuItem(
+                          child: IconButton(
+                            onPressed: () {
+                              // var uri = Uri.parse("tel:${contactModel.number ?? ""}");
+                              var uri = Uri.parse(
+                                  "https://api.whatsapp.com/send/?phone=918401784759&text&type=phone_number&app_absent=0");
 
-                            launchUrl(uri);
-                          },
-                          icon: Icon(Icons.call),
-                        ),),
-                        PopupMenuItem(child: IconButton(
-                          onPressed: () {
-                            Provider.of<ContactListProvider>(context, listen: false).remove(index);
-                          },
-                          icon: Icon(Icons.delete),
-                        ),),
-                        PopupMenuItem(child: IconButton(
-                          onPressed: () {
-                            Navigator.push(context, MaterialPageRoute(
-                              builder: (context) {
-                                return AddContactPage(
-                                  index: index,
-                                );
-                              },
-                            ));
-                          },
-                          icon: Icon(Icons.edit),
-                        ),),
+                              launchUrl(uri);
+                            },
+                            icon: Icon(Icons.call),
+                          ),
+                        ),
+                        PopupMenuItem(
+                          child: IconButton(
+                            onPressed: () {
+                              Provider.of<ContactListProvider>(context, listen: false).remove(index);
+                            },
+                            icon: Icon(Icons.delete),
+                          ),
+                        ),
+                        PopupMenuItem(
+                          child: IconButton(
+                            onPressed: () {
+                              Navigator.push(context, MaterialPageRoute(
+                                builder: (context) {
+                                  return AddContactPage(
+                                    index: index,
+                                  );
+                                },
+                              ));
+                            },
+                            icon: Icon(Icons.edit),
+                          ),
+                        ),
                       ];
                     },
                   )
@@ -98,25 +106,54 @@ class _HomePageState extends State<HomePage> {
           },
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () async {
+      floatingActionButton: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          FloatingActionButton(
+            onPressed: () async {
 
-            print("isAndroid ${Platform.isAndroid}");
-            print("isFuchsia ${Platform.isFuchsia}");
-            print("isIOS ${Platform.isIOS}");
-            print("isLinux ${Platform.isLinux}");
-            print("isMacOS ${Platform.isMacOS}");
-            print("isWindows ${Platform.isWindows}");
-            print("isWeb ${kIsWeb}");
+              var str = prefs.getString("model");
 
-          // Navigator.push(
-          //     context,
-          //     MaterialPageRoute(
-          //       builder: (context) => AddContactPage(),
-          //     ));
-          // setState(() {});
-        },
-        child: const Icon(Icons.add),
+              var contactList = ContactList.fromRawJson(str??'');
+              print(contactList.contactList.length);
+
+              for (var element in contactList.contactList) {
+                print(element.name);
+              }},
+
+            child: const Icon(Icons.read_more),
+          ),
+          FloatingActionButton(
+            onPressed: () async {
+              // var sd = {"name": "asdf", "oo": "ljhadfs"};
+              // var ef = jsonEncode(sd);
+              //
+              // print(ef);
+              // var jd = jsonDecode(ef);
+              // print(jd);
+
+
+
+              ContactList contactList=ContactList(contactList: [
+                ContactListElement(name: "a",email: "a@gmail.com",number: "123"),
+                ContactListElement(name: "b",email: "dd5a@gmail.com",number: "12sdf3"),
+                ContactListElement(name: "b",email: "add@gmail.com",number: "124563"),
+              ]);
+
+
+              var rawJson = contactList.toRawJson();
+              prefs.setString("model",rawJson );
+
+              // Navigator.push(
+              //     context,
+              //     MaterialPageRoute(
+              //       builder: (context) => AddContactPage(),
+              //     ));
+              // setState(() {});
+            },
+            child: const Icon(Icons.add),
+          ),
+        ],
       ),
     );
   }
